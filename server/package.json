@@ -1,10 +1,11 @@
 {
-  "name": "opencv-playground-interface",
+  "name": "opencv-playground-interface_server",
   "version": "1.0.0",
-  "description": "Server and Interface for OpenCV-Playground",
+  "private": true,
+  "description": "Server for OpenCV-Playground",
   "author": "Jonathan Peterkin",
   "scripts": {
-    "serve": "node src/app.js"
+    "serve": "node src/server.js"
   },
   "dependencies": {
     "@vue/cli": "^3.11.0",
