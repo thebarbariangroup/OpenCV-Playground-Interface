@@ -1,2 +1,2 @@
 # OpenCV-Playground-Interface
-Server and UI for sending live updates to OpenCV-Playground
+Server and Client for sending live updates to OpenCV-Playground
