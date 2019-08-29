@@ -9,6 +9,7 @@ module.exports = class WebsocketController {
     });
     this.clients = [];
     this.history = [];
+    this.nextId = 0;
 
     this._setupEventHandlers();
   }
@@ -24,16 +25,14 @@ module.exports = class WebsocketController {
     const connection = request.accept(null, request.origin); // TODO: Check origin
     const client = {
       connection,
-      id: null,
-      userName: null,
-      type: null,
+      id: this.nextId++,
+      type: null, // e.g. renderer vs controls
     };
-    const id = this.clients.push(client) - 1;
-    this.clients[id].id = id;
-    this.clients[id].userName = `id_${id}`;
 
-    console.log(new Date() + ' Connection accepted.');
-    // send back chat history
+    console.log(new Date() + ' Accepted connection: ID = ' + client.id);
+    this.clients.push(client);
+
+    // send back message history
     if (this.history.length > 0) {
       connection.sendUTF(JSON.stringify({ type: 'history', payload: this.history }));
     }
@@ -44,30 +43,30 @@ module.exports = class WebsocketController {
 
   _onMessage (client, message) {
     if (message.type === 'utf8') {
-      console.log(new Date() + ` Received Message from ${client.userName}: ${message.utf8Data}`);
+      console.log(new Date() + ` Received Message from ${client.id}: ${message.utf8Data}`);
 
       // we want to keep history of all sent messages
-      const obj = {
-        time: (new Date()).getTime(),
-        text: this._safeJsonParse(message.utf8Data).payload.text,
-        author: client.userName,
-      };
-      this.history.push(obj);
+      const messageData = this._safeJsonParse(message.utf8Data);
+
+      this.history.push(messageData);
       this.history = this.history.slice(-100);
 
-      const newMessage = JSON.stringify({ action: 'message', payload: obj });
-
-      for (let i = 0, len = this.clients.length; i < len; i++) {
-        console.log(new Date() + ` Sent Message to ${this.clients[i].userName}: ${newMessage}`);
-        this.clients[i].connection.sendUTF(newMessage);
-      }
+      this._broadcast(messageData)
     }
   }
 
   _onClose (client, connection) {
-    if (client.userName !== false) {
-      console.log(new Date() + ` Peer ${connection.remoteAddress} disconnected.`);
-      this.clients.filter(item => item.id !== client.id);
+    // connection.remoteAddress
+    console.log(new Date() + ` Disconnected: ${client.id}`);
+    this.clients = this.clients.filter(item => item.id !== client.id);
+  }
+
+  _broadcast (messageData) {
+    const message = JSON.stringify(messageData);
+
+    for (let i = 0, len = this.clients.length; i < len; i++) {
+      console.log(new Date() + ` - Sent Message to ${this.clients[i].id}: ${message}`);
+      this.clients[i].connection.sendUTF(message);
     }
   }
 

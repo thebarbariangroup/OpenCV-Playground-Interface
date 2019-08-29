@@ -1,7 +1,9 @@
 <template>
   <div id="app">
-    <p>...!</p>
-    <input
+    <CompositionsList />
+    <Composer />
+
+    <!-- <input
       v-model="message"
       type="text"
     >
@@ -15,12 +17,22 @@
       >
         {{ item && item.action === 'message' ? item.payload.text : 'E R R O R' }}
       </li>
-    </ul>
+    </ul> -->
+
   </div>
 </template>
 
 <script>
+import { EventBus, events } from './utils/EventBus.js';
+
+import CompositionsList from './components/CompositionsList';
+import Composer from './components/composer/Composer';
+
 export default {
+  components: {
+    CompositionsList,
+    Composer,
+  },
   data () {
     return {
       message: '',
@@ -30,42 +42,48 @@ export default {
   mounted () {
     this.connection = new WebSocket('ws://localhost:1337');
 
-    this.connection.onopen = function () {
-      console.log('socket open');
-      // connection is opened and ready to use
-    };
-
-    this.connection.onerror = function (error) {
-      console.log('socket error', error);
-    };
-
-    this.connection.onmessage = this.onMessage;
+    this.setupEventHandlers();
   },
   methods: {
-    sendMessage () {
-      const payload = {
-        text: this.message,
+    setupEventHandlers () {
+      this.onUpdateComposition = this.onUpdateComposition.bind(this);
+      EventBus.$on(events.UPDATE_COMPOSITION, this.onUpdateComposition);
+
+      this.connection.onopen = () => {
+        console.log('socket open');
       };
-      const json = JSON.stringify({ action: 'message', payload: payload });
-      this.connection.send(json);
+
+      this.connection.onerror = (error) => {
+        console.log('socket error', error);
+      };
+
+      this.connection.onmessage = this.onMessage;
+    },
+    onUpdateComposition (composition) {
+      console.log(composition);
+      this.sendMessage('UPDATE_COMPOSITION', composition);
+    },
+    sendMessage (action, payload) {
+      const message = JSON.stringify({ action, payload });
+      this.connection.send(message);
     },
     onMessage (message) {
-      const json = this.safeJsonParse(message.data);
-      console.log('socket onMessage', json);
+      const messageData = this.jsonParse(message.data);
+      console.log('socket onMessage', messageData);
 
-      if (json.action === 'message') {
-        this.log.push(json);
+      if (messageData.action === 'message') {
+        this.log.push(messageData);
       }
     },
-    safeJsonParse (string) {
-      var json;
+    jsonParse (string) {
+      var obj;
       try {
-        json = JSON.parse(string);
+        obj = JSON.parse(string);
       } catch (e) {
         console.log('invalid JSON: ', string);
         return;
       }
-      return json;
+      return obj;
     }
   }
 }
@@ -76,7 +94,6 @@ export default {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
   color: #2c3e50;
   margin-top: 60px;
 }
