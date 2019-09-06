@@ -34,7 +34,7 @@ module.exports = class WebsocketController {
 
     // send back message history
     if (this.history.length > 0) {
-      connection.sendUTF(JSON.stringify({ type: 'history', payload: this.history }));
+      connection.sendUTF(JSON.stringify({ action: 'HISTORY', payload: this.history }));
     }
 
     connection.on('message', this._onMessage.bind(this, client));
