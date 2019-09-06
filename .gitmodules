@@ -1,3 +1,4 @@
 [submodule "OpenCV-Playground"]
 	path = OpenCV-Playground
 	url = git@github.com:thebarbariangroup/OpenCV-Playground.git
+	branch = multipage
