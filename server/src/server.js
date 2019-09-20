@@ -1,16 +1,25 @@
 "use strict";
-process.title = 'node-chat';
-const http = require('http');
+process.title = 'OpenCV-Playground';
+
+const fs    = require('fs');
+const path  = require('path');
+const https = require('https');
+
+const app = require('./app');
 const WebsocketController = require('./websocket/websocketController');
-const webSocketServerPort = 1337;
 
+const WSS_PORT = 8443;
+const HTTPS_OPTIONS = {
+  key: fs.readFileSync(path.resolve(__dirname, '../keys/client-key.pem')),
+  cert: fs.readFileSync(path.resolve(__dirname, '../keys/client-cert.pem')),
+}
 
-const httpServer = http.createServer(function(request, response) {});
+const httpsServer = https.createServer(HTTPS_OPTIONS, app);
 
-httpServer.listen(webSocketServerPort, function() {
-  console.log((new Date()) + " Server is listening on port " + webSocketServerPort);
+httpsServer.listen(WSS_PORT, () => {
+  console.log((new Date()) + " Server is listening on port " + WSS_PORT);
 });
 
 const websocketController = new WebsocketController({
-  httpServer: httpServer,
+  httpServer: httpsServer,
 });
