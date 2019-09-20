@@ -14,12 +14,12 @@ const HTTPS_OPTIONS = {
   cert: fs.readFileSync(path.resolve(__dirname, '../keys/client-cert.pem')),
 }
 
-const httpsServer = https.createServer(HTTPS_OPTIONS, app);
+const server = https.createServer(HTTPS_OPTIONS, app);
 
-httpsServer.listen(WSS_PORT, () => {
+server.listen(WSS_PORT, () => {
   console.log((new Date()) + " Server is listening on port " + WSS_PORT);
 });
 
 const websocketController = new WebsocketController({
-  httpServer: httpsServer,
+  httpServer: server,
 });
