@@ -3,7 +3,7 @@ Websocket Server and Client for sending live updates to OpenCV-Playground.
 
 ---
 
-## Inital Setup
+## Inital Project Setup
 1. Clone repo
 2. `git submodule init`
 3. `git submodule update`
