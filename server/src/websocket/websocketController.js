@@ -20,7 +20,7 @@ module.exports = class WebsocketController {
   }
 
   _onRequest (request) {
-    console.log(new Date() + ` Connection from origin ${request.origin}.`);
+    console.log(new Date() + ` Connection from origin ${request.origin}`);
 
     const connection = request.accept(null, request.origin); // TODO: Check origin
     const client = {
